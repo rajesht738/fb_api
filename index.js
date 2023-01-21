@@ -11,6 +11,7 @@ const postRoute = require("./routes/posts");
 
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
+const multer = require("multer");
 
 app.use((req,res,next) => {
   res.header("Access-Control-Allow-Credentials", true);
@@ -22,8 +23,22 @@ app.use(cors({
 }));
 app.use(cookieParser());
 
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, '../social/public/upload')
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now() + file.originalname;
+    cb(null, uniqueSuffix)
+  }
+})
 
-
+const upload = multer({ storage: storage });
+app.post("/api/upload", upload.single("file"), (req,res) => {
+  const file = req.file;
+  console.log(file);
+  res.status(200).json(file.filename);
+})
 app.use("/api/users", userRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/comment", commentRoute);
